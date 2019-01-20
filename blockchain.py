@@ -11,14 +11,14 @@ from hash_util import hash_string_256, hash_block
 MINING_REWARD = 10
 
 # Our starting block for the blockchain
-genesis_block = {
-    'previous_hash': '',
-    'index': 0,
-    'transactions': [],
-    'proof': 100
-}
+# genesis_block = {
+#     'previous_hash': '',
+#     'index': 0,
+#     'transactions': [],
+#     'proof': 100
+# }
 # Initializing our (empty) blockchain list
-blockchain = [genesis_block]
+blockchain = []
 # Unhandled transactions
 open_transactions = []
 # We are the owner of this blockchain node, hence this is our identifier (e.g. for sending coins)
@@ -27,13 +27,14 @@ owner = 'Max'
 participants = {'Max'}
 #Load data
 def load_data():
+    global blockchain
+    global open_transactions
     # use .p extension if it is a pickle
     try:
         with open('blockchain.txt', mode='rb') as f:
             # file_content = pickle.loads(f.read())
             file_content = f.readlines()
-            global blockchain
-            global open_transactions
+            
             # blockchain = file_content['chain']
             # open_transactions = file_content['ot']
             #json doesn't understand the escape new line so we take 
@@ -58,10 +59,21 @@ def load_data():
                     [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
                 updated_transactions.append(updated_transaction)
             open_transactions = updated_transactions
-    except IOError:
-        print("File not found!!")
-    except ValueError:
-        print("A value error!!")
+    except (IOError, IndexError):
+        print("File not found or an empty file")
+        # Our starting block for the blockchain
+        genesis_block = {
+            'previous_hash': '',
+            'index': 0,
+            'transactions': [],
+            'proof': 100
+        }
+        # Initializing our (empty) blockchain list
+        blockchain = [genesis_block]
+        # Unhandled transactions
+        open_transactions = []
+    # except ValueError:
+    #     print("A value error!!")
     finally:
         print("CleanUP!") # Finally block will run always
 
@@ -71,15 +83,18 @@ load_data()
 
 # Save Data to a file
 def save_data():
-    with open('blockchain.txt', mode='wb') as f:
-         f.write(json.dumps(blockchain))
-         f.write('\n')
-         f.write(json.dumps(open_transactions))
-        # save_data = {
-        #     'chain': blockchain,
-        #     'ot': open_transactions
-        # }
-        # f.write(pickle.dumps(save_data))
+    try:
+        with open('blockchain.txt', mode='wb') as f:
+            f.write(json.dumps(blockchain))
+            f.write('\n')
+            f.write(json.dumps(open_transactions))
+            # save_data = {
+            #     'chain': blockchain,
+            #     'ot': open_transactions
+            # }
+            # f.write(pickle.dumps(save_data))
+    except:
+        print("Saving failed!")
 
 def valid_proof(transactions, last_hash, proof):
     """Validate a proof of work number and see if it solves the puzzle algorithm (two leading 0s)
