@@ -1,3 +1,3 @@
 # blockhainbasics
-# There is nothing working here there jsut some basics
+# Under Construction: Some funcs may not be working yet
 Learn the basics of blockchains with python
